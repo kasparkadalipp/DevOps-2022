@@ -1,0 +1,118 @@
+---
+- name: create
+  hosts: k8s-master
+  gather_facts: true
+  become: true
+  become_user: centos
+  tasks:
+    - name: Create target directory
+      file:
+       path=/home/centos/deploy_flask/
+       state=directory
+
+    - name: create the persistent volume file
+      lineinfile:
+            path: /home/centos/deploy_flask/pv.yaml
+            create: yes
+            line: |
+              apiVersion: v1
+              kind: PersistentVolume
+              metadata:
+                name: pvolume
+                labels:
+                  type: local
+              spec:
+                storageClassName: manual
+                capacity:
+                  storage: 5Gi
+                accessModes:
+                - ReadWriteOnce
+                hostPath:
+                  path: "/mnt/data"
+
+                nodeAffinity:
+                  required:
+                    nodeSelectorTerms:
+                    - matchExpressions:
+                      - key: kubernetes.io/hostname
+                        operator: In
+                        values:
+                        - node1 
+    - name: create the persistent volume 
+      command: "kubectl create -f /home/centos/deploy_flask/pv.yaml"
+
+    - name: create the deployment file
+      lineinfile:
+            path: /home/centos/deploy_flask/deploy1.yaml
+            create: yes
+            line: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: flask-deployment
+                labels:
+                  app: flask
+              spec:
+                replicas: 1
+                selector:
+                  matchLabels:
+                    app: flask
+                template:
+                  metadata:
+                    labels:
+                      app: flask
+                  spec:
+                    containers:
+                    - name: flask
+                      image: kadalipp/devops2022:prac2
+                      ports:
+                      - containerPort: 5000
+                      lifecycle:
+                        postStart:
+                          exec:
+                            command: ["cp", "/data/CO2.csv", "/app/CO2.csv"]
+                      volumeMounts:
+                      - mountPath: "/data"
+                        name: data-storage-volume
+                    volumes:
+                      - name: data-storage-volume
+                        persistentVolumeClaim:
+                          claimName: vclaim
+              ---
+              apiVersion: v1
+              kind: PersistentVolumeClaim
+              metadata:
+                name: vclaim
+                namespace: default
+              spec:
+                accessModes:
+                - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 1Gi
+                storageClassName: manual
+    - name: create the deployment 
+      command: "kubectl create -f /home/centos/deploy_flask/deploy1.yaml"
+
+    - name: create the service file
+      lineinfile:
+            path: /home/centos/deploy_flask/service1.yaml
+            create: yes
+            line: |
+              apiVersion: v1
+              kind: Service
+              metadata:
+                name: service-flaskapp
+                labels:
+                  run: service-flaskapp
+              spec:
+                type: NodePort
+                selector:
+                  app: flask
+                ports:
+                - protocol: TCP
+                  port: 5000
+                  targetPort: 5000
+                  name: tcp-80
+    - name: create the service 
+      command: "kubectl create -f /home/centos/deploy_flask/service1.yaml"

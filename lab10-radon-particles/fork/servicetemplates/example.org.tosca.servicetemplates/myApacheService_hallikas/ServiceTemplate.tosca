@@ -1,0 +1,48 @@
+tosca_definitions_version: tosca_simple_yaml_1_3
+
+metadata:
+  targetNamespace: "example.org.tosca.servicetemplates"
+topology_template:
+  node_templates:
+    containerNginx_0:
+      type: radon.nodes.docker.containerNginx
+      metadata:
+        x: "1076"
+        y: "145"
+        displayName: "containerNginx"
+      properties:
+        container_port: 80
+        image_name: "httpd"
+        container_name: "mynginxserver"
+        host_port: 8083
+      requirements:
+        - host:
+            node: DockerEngineUT_0
+            relationship: con_HostedOn_1
+            capability: host
+    RemoteWorkstation_0:
+      type: radon.nodes.VM.RemoteWorkstation
+      metadata:
+        x: "350"
+        y: "218"
+        displayName: "RemoteWorkstation"
+      properties:
+        ssh_username: "centos"
+        KeyFile: "/home/ubuntu/hallikas_key_main.pem"
+        external_ip: "172.17.89.24"
+    DockerEngineUT_0:
+      type: radon.nodes.docker.DockerEngineUT
+      metadata:
+        x: "681"
+        y: "207"
+        displayName: "DockerEngineUT"
+      requirements:
+        - host:
+            node: RemoteWorkstation_0
+            relationship: con_HostedOn_0
+            capability: host
+  relationship_templates:
+    con_HostedOn_0:
+      type: tosca.relationships.HostedOn
+    con_HostedOn_1:
+      type: tosca.relationships.HostedOn

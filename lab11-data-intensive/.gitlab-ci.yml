@@ -1,0 +1,92 @@
+variables:
+  DS_HOST: "172.17.89.20"
+  DS_PORT1_: "30993"
+  DS_PORT2_: "30007"
+  DS_PORT3_: "30008"
+  DS_NAME1_: datasource_1
+  DS_NAME2_: datasource_2
+  DS_NAME3_: datasource_3
+  IMAGE_HUB: "gitlab.cs.ut.ee:5050/kadalipp/"
+  IMAGE_JOB1_PREPROCESS: "$CI_REGISTRY_IMAGE/job1_data_preprocess"
+  IMAGE_JOB1_PROCESS: "$CI_REGISTRY_IMAGE/job1_data_process"
+  IMAGE_JOB2_PREPROCESS: "$CI_REGISTRY_IMAGE/job2_data_preprocess"
+  IMAGE_JOB2_PROCESS: "$CI_REGISTRY_IMAGE/job2_data_process"
+  IMAGE_JOB3_PREPROCESS: "$CI_REGISTRY_IMAGE/job3_data_preprocess"
+  IMAGE_JOB3_PROCESS: "$CI_REGISTRY_IMAGE/job3_data_process"
+  INFLUX_DB_HOST: "influxdb-service"
+  INFLUX_DB_NAME1_: "local"
+  INFLUX_DB_NAME2_: "AQI"
+  INFLUX_DB_NAME3_: "cluster"
+  INFLUX_DB_PORT: "8086"
+
+stages:
+  - build
+  - deploy
+
+job1_build:
+  script:
+    # 1. Building the docker image for data_preprocess
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build -t $IMAGE_JOB1_PREPROCESS:latest -t $IMAGE_JOB1_PREPROCESS:$CI_COMMIT_SHORT_SHA --build-arg  DS_HOST=$DS_HOST --build-arg  DS_PORT=$DS_PORT1_ --build-arg  DS_NAME=$DS_NAME1_ --build-arg  INFLUX_DB_HOST=$INFLUX_DB_HOST  --build-arg  INFLUX_DB_NAME=$INFLUX_DB_NAME1_  -f ./job1/data_preprocess/Dockerfile ./job1/data_preprocess
+    - docker push $IMAGE_JOB1_PREPROCESS
+      # 2. Building the docker image for data_process (This commands  to be written by you as like previous)
+    - docker build -t $IMAGE_JOB1_PROCESS:latest -t $IMAGE_JOB1_PROCESS:$CI_COMMIT_SHORT_SHA --build-arg  INFLUX_DB_HOST=$INFLUX_DB_HOST  --build-arg  INFLUX_DB_NAME=$INFLUX_DB_NAME1_  -f ./job1/data_process/Dockerfile ./job1/data_process
+    - docker push $IMAGE_JOB1_PROCESS
+
+  stage: build
+  tags:
+    - build
+
+job2_build:
+  script:
+    # 1. Building the docker image for data_preprocess
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build -t $IMAGE_JOB2_PREPROCESS:latest -t $IMAGE_JOB2_PREPROCESS:$CI_COMMIT_SHORT_SHA --build-arg  DS_HOST=$DS_HOST --build-arg  DS_PORT=$DS_PORT2_ --build-arg  DS_NAME=$DS_NAME2_ --build-arg  INFLUX_DB_HOST=$INFLUX_DB_HOST  --build-arg  INFLUX_DB_NAME=$INFLUX_DB_NAME2_  -f ./job2/data_preprocess/Dockerfile ./job2/data_preprocess
+    - docker push $IMAGE_JOB2_PREPROCESS
+      # 2. Building the docker image for data_process (This commands  to be written by you as like previous)
+    - docker build -t $IMAGE_JOB2_PROCESS:latest -t $IMAGE_JOB2_PROCESS:$CI_COMMIT_SHORT_SHA  --build-arg  INFLUX_DB_HOST=$INFLUX_DB_HOST  --build-arg  INFLUX_DB_NAME=$INFLUX_DB_NAME2_  -f ./job2/data_process/Dockerfile ./job2/data_process
+    - docker push $IMAGE_JOB2_PROCESS
+  stage: build
+  tags:
+    - build
+
+job3_build:
+  script:
+    # 1. Building the docker image for data_preprocess
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build -t $IMAGE_JOB3_PREPROCESS:latest -t $IMAGE_JOB3_PREPROCESS:$CI_COMMIT_SHORT_SHA --build-arg  DS_HOST=$DS_HOST --build-arg  DS_PORT=$DS_PORT3_ --build-arg  DS_NAME=$DS_NAME3_ --build-arg  INFLUX_DB_HOST=$INFLUX_DB_HOST  --build-arg  INFLUX_DB_NAME=$INFLUX_DB_NAME3_  -f ./job3/data_preprocess/Dockerfile ./job3/data_preprocess
+    - docker push $IMAGE_JOB3_PREPROCESS
+      # 2. Building the docker image for data_process (This commands  to be written by you as like previous)
+    - docker build -t $IMAGE_JOB3_PROCESS:latest -t $IMAGE_JOB3_PROCESS:$CI_COMMIT_SHORT_SHA  --build-arg  INFLUX_DB_HOST=$INFLUX_DB_HOST  --build-arg  INFLUX_DB_NAME=$INFLUX_DB_NAME3_  -f ./job3/data_process/Dockerfile ./job3/data_process
+    - docker push $IMAGE_JOB3_PROCESS
+  stage: build
+  tags:
+    - build
+
+
+services_deploy:
+    stage: deploy
+    image:
+        name: bitnami/kubectl:latest
+        entrypoint: [""]
+    script:
+        - kubectl config use-context devops2022-fall/students/devops2022Fall-Kadalipp-B75914/lab11-data_intensive:lab11
+        - kubectl delete secrets registry-credentials || true
+        - kubectl create secret docker-registry registry-credentials --docker-server=https://gitlab.cs.ut.ee:5050 --docker-username=kadalipp --docker-password=$gitlabpassword --docker-email=kaspar.kadalipp@ut.ee || true
+        - kubectl delete -f ./services_deployment.yml || true
+        - kubectl apply -f ./services_deployment.yml
+    tags:
+        - deploy
+
+jobs_deploy:
+    stage: deploy
+    image:
+        name: bitnami/kubectl:latest
+        entrypoint: [""]
+    script:
+        - kubectl config use-context devops2022-fall/students/devops2022Fall-Kadalipp-B75914/lab11-data_intensive:lab11
+        - kubectl delete -f ./job_deployment.yml || true
+        - kubectl apply -f ./job_deployment.yml
+ 
+    tags:
+        - deploy

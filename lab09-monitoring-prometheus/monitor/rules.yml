@@ -1,0 +1,14 @@
+groups:
+- name: AllInstances
+  rules:
+  - alert: InstanceDown
+    # Condition for alerting
+    expr: absent(container_start_time_seconds{name="flask_cont"})
+    for: 10s
+    # Annotation - additional informational labels to store more information
+    annotations:
+      title: 'Instance {{ $labels.name }} down'
+      description: '{{ $labels.name }} instance has been down for more than 10 seconds.'
+    # Labels - additional labels to be attached to the alert
+    labels:
+      severity: 'critical'

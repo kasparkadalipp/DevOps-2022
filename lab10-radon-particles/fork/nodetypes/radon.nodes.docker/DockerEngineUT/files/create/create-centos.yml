@@ -1,0 +1,146 @@
+---
+- name: create
+  hosts: all
+  gather_facts: true
+  become: true
+  become_method: sudo
+  # vars:
+  #   ansible_ssh_private_key_file: "{{ ssh_key_file }}"
+  #   ansible_ssh_user: "{{ ssh_user }}"
+  tasks:
+    - name: Prerequirements for yum module
+      yum:
+        name: "*"
+        state: latest
+    - name: Create target directory
+      file:
+           path=/etc/docker/
+           state=directory
+           mode=0755
+    - name: configure docker network address, ahead of time, to solve issues with docker default network collision with UT VPN
+      copy:
+        dest: /etc/docker/daemon.json
+        content: |
+          {
+            "default-address-pools": [{"base":"172.80.0.0/16","size":24}]
+          }
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Install yum utils
+      yum:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - yum-utils
+        - device-mapper-persistent-data
+        - lvm2
+        - python3-pip
+        - python3-setuptools
+
+    - name: Add Docker repo
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docer-ce.repo
+      become: yes
+
+    - name: Enable Docker Edge repo
+      ini_file:
+        dest: /etc/yum.repos.d/docer-ce.repo
+        section: 'docker-ce-edge'
+        option: enabled
+        value: 0
+      become: yes
+
+    - name: Enable Docker Test repo
+      ini_file:
+        dest: /etc/yum.repos.d/docer-ce.repo
+        section: 'docker-ce-test'
+        option: enabled
+        value: 0
+      become: yes
+
+    - name: Install Docker
+      package:
+        name: docker-ce
+        state: latest
+      become: yes
+
+    - name: Add user centos to docker group
+      user:
+        name: centos
+        groups: docker
+        append: yes
+      become: yes
+
+    - name: send TERM signal to process with PID 1
+      shell: "kill -TERM 1"
+      become: yes
+
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+      become: yes
+
+    - name: Install Docker Module for Python
+      pip:
+         name: "docker"
+
+    # - name: Install required packages
+    #   yum:
+    #     pkg:
+    #       - apt-transport-https
+    #       - ca-certificates
+    #       - curl
+    #       - gnupg
+    #       - software-properties-common
+
+    # - name: Add Docker GPG key
+    #   apt_key:
+    #     url: https://download.docker.com/linux/{{ ansible_distribution|lower }}/gpg
+    #     id: 0EBFCD88
+    #     state: present
+
+    # - name: Add Docker repository
+    #   apt_repository:
+    #     filename: docker
+    #     repo: deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release|lower }} stable
+    #     update_cache: true
+
+
+    # - name: Create target directory
+    #   file:
+    #        path=/tmp/docker/
+    #        state=directory
+    #        mode=0755
+    # - name: Create target directory
+    #   file:
+    #        path=/etc/docker/
+    #        state=directory
+    #        mode=0755
+    # - name: configure docker network address, ahead of time, to solve issues with docker default network collision with UT VPN
+    #   copy:
+    #     dest: /etc/docker/daemon.json
+    #     content: |
+    #       {
+    #         "default-address-pools": [{"base":"172.80.0.0/16","size":24}]
+    #       }
+    #     owner: root
+    #     group: root
+    #     mode: '0644'
+
+    # - name: Install docker-ce
+    #   apt:
+    #     name: docker-ce
+
+    # - name: Start and enable docker service
+    #   service:
+    #     name: docker
+    #     enabled: true
+    #     state: started
+
+
+# when: ansible_os_family == "Debian"

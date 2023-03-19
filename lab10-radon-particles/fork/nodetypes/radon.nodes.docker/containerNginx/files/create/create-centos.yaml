@@ -1,0 +1,16 @@
+---
+- name: create
+  hosts: all
+  gather_facts: true
+  become: true
+  become_method: sudo
+
+  tasks:
+
+    - name: Start container 
+      docker_container:
+        name: "{{container_name}}"
+        image: "{{image_name}}"
+        ports:
+          - "{{host_port}}:{{container_port}}"
+        state: started

@@ -1,0 +1,59 @@
+variables:
+  PROMO_CONTAINER : prom_monitor
+  CADVISOR_CONTAINER : cadvisor
+  NODE_EXPORTER_CONTAINER : nodeExporter
+  GRAFANA_CONTAINER : grafana
+  ALERT_CONTAINER : alertmanager
+  INFLUX_DB_NAME: influxdb-co2
+  INFLUX_DB_HOST : 172.17.90.20
+  FLASK_CONTAINER : flask_cont
+  TEST_IMAGE_NAME: flask_image
+  CSV_FILENAME: CO2.csv
+  INFLUX_VOL : influxdb-storage
+  BACKEND_CONTAINER : influxdb_con
+
+ 
+stages:
+  - monitor-stage
+  - build
+
+monitor-job:
+  tags:
+      - controller
+  stage: monitor-stage
+  script:
+      - chmod +x ./monitor/install_services.sh
+      - bash ./monitor/install_services.sh
+  only:
+      changes:
+        - monitor/*
+  after_script:
+    - sleep 60
+    - docker ps -a
+
+
+flask-frontend:
+  tags:
+    - master
+  stage: build
+  script:
+    - chmod +x ./flask-frontend/install_services.sh
+    - bash ./flask-frontend/install_services.sh
+  only:
+      changes:
+        - flask-frontend/*
+  after_script:
+    - sleep 60
+    - docker ps -a
+    - docker logs $FLASK_CONTAINER
+
+influx-backend:
+  tags:
+    - worker1
+  stage: build
+  script:
+    - chmod +x ./influx-backend/install_services.sh
+    - bash ./influx-backend/install_services.sh
+  only:
+      changes:
+        - influx-backend/*

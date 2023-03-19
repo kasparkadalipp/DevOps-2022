@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: preprocess-deployment
+  labels:
+    app: data-preprocess-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-preprocess-app
+  template:
+    metadata:
+      labels:
+        app: data-preprocess-app
+    spec:
+      containers:
+      - name: preprocessapp
+        image: gitlab.cs.ut.ee:5050/devops2022-fall/students/devops2022fall-kadalipp-b75914/lab11-data_intensive/job1_data_preprocess
+      imagePullSecrets:
+      - name: registry-credentials
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: process-deployment
+  labels:
+    app: data-process-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-process-app
+  template:
+    metadata:
+      labels:
+        app: data-process-app
+    spec:
+      containers:
+      - name: processapp
+        image: gitlab.cs.ut.ee:5050/devops2022-fall/students/devops2022fall-kadalipp-b75914/lab11-data_intensive/job1_data_process
+      imagePullSecrets:
+      - name: registry-credentials
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: preprocess-deployment2
+  labels:
+    app: data-preprocess-app2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-preprocess-app2
+  template:
+    metadata:
+      labels:
+        app: data-preprocess-app2
+    spec:
+      containers:
+      - name: preprocessapp2
+        image: gitlab.cs.ut.ee:5050/devops2022-fall/students/devops2022fall-kadalipp-b75914/lab11-data_intensive/job2_data_preprocess
+      imagePullSecrets:
+      - name: registry-credentials
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: process-deployment2
+  labels:
+    app: data-process-app2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-process-app2
+  template:
+    metadata:
+      labels:
+        app: data-process-app2
+    spec:
+      containers:
+      - name: processapp2
+        image: gitlab.cs.ut.ee:5050/devops2022-fall/students/devops2022fall-kadalipp-b75914/lab11-data_intensive/job2_data_process
+      imagePullSecrets:
+      - name: registry-credentials
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: preprocess-deployment3
+  labels:
+    app: data-preprocess-app3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-preprocess-app3
+  template:
+    metadata:
+      labels:
+        app: data-preprocess-app3
+    spec:
+      containers:
+      - name: preprocessapp3
+        image: gitlab.cs.ut.ee:5050/devops2022-fall/students/devops2022fall-kadalipp-b75914/lab11-data_intensive/job3_data_preprocess
+      imagePullSecrets:
+      - name: registry-credentials
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: process-deployment3
+  labels:
+    app: data-process-app3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-process-app3
+  template:
+    metadata:
+      labels:
+        app: data-process-app3
+    spec:
+      containers:
+      - name: processapp3
+        image: gitlab.cs.ut.ee:5050/devops2022-fall/students/devops2022fall-kadalipp-b75914/lab11-data_intensive/job3_data_process
+      imagePullSecrets:
+      - name: registry-credentials

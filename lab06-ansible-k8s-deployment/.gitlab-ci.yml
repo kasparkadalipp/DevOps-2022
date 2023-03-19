@@ -1,0 +1,17 @@
+stages:
+  - deploy
+
+deploy:
+  stage: deploy
+  image:
+    name: williamyeh/ansible:ubuntu18.04
+  variables:
+    ANSIBLE_HOST_KEY_CHECKING: "False"
+ 
+  script:
+    - mkdir .ssh
+    - cp ./kadalipp .ssh 
+    - chmod  400 .ssh/kadalipp
+    - ansible-playbook ./install-flask.yaml --extra-vars="ansible_ssh_private_key_file=.ssh/kadalipp" -i ./hosts.yaml
+ 
+  allow_failure: true

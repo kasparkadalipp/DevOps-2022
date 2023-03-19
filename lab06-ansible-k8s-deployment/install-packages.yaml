@@ -1,0 +1,27 @@
+---
+- hosts: k8s-workers
+  gather_facts: true
+  become: true
+  become_method: sudo
+
+  tasks:
+    - name: Install the latest version of vim editor
+      yum:
+        name: vim
+        state: latest
+
+    - name: Download the nano editor package but do not install it
+      yum:
+        name:
+          - nano
+        state: latest
+        download_only: true
+        download_dir: "/home/centos/"
+    - name: Install the latest version of Apache
+      yum:
+        name: httpd
+        state: latest
+    - name: Start apache service
+      service:
+        name: httpd
+        state: started

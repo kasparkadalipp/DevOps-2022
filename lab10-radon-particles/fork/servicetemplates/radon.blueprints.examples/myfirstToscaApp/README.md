@@ -1,0 +1,1 @@
+Install a docker engine including all the related libraries on  k8s-master VM. Once the docker engine is installed and started, we will create a nginx web server inside a container.

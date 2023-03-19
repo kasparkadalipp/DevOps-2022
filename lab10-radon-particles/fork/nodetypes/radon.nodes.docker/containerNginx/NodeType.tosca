@@ -1,0 +1,64 @@
+tosca_definitions_version: tosca_simple_yaml_1_3
+
+node_types:
+  radon.nodes.docker.containerNginx:
+    derived_from: radon.nodes.docker.DockerApplication
+    metadata:
+      targetNamespace: "radon.nodes.docker"
+      abstract: "false"
+      final: "false"
+    properties:
+      container_port:
+        type: string
+        required: false
+        default: 80
+      image_name:
+        type: string
+        default: "nginx:1.13"
+      container_name:
+        type: string
+        description: This is the name of the container.
+        required: false
+        default: "nginx"
+      host_port:
+        type: string
+        required: false
+        default: 8080
+    interfaces:
+      Standard:
+        type: tosca.interfaces.node.lifecycle.Standard
+        operations:
+          stop:
+            description: The standard stop operation
+          start:
+            description: The standard start operation
+          create:
+            description: The standard create operation
+            inputs:
+              container_port:
+                type: string
+                required: true
+                default: { get_property: [ SELF, container_port ] }
+              image_name:
+                type: string
+                required: true
+                default: { get_property: [ SELF, image_name ] }
+              container_name:
+                type: string
+                required: true
+                default: { get_property: [ SELF, container_name ] }
+              host_port:
+                type: string
+                required: true
+                default: { get_property: [ SELF, host_port ] }
+            implementation:
+              primary: create
+              timeout: 0
+          configure:
+            description: The standard configure operation
+          delete:
+            description: The standard delete operation
+    artifacts:
+      create:
+        type: radon.artifacts.Ansible
+        file: create-centos.yaml

@@ -1,0 +1,132 @@
+tosca_definitions_version: tosca_simple_yaml_1_3
+
+metadata:
+  targetNamespace: "radon.blueprints.testing"
+topology_template:
+  inputs:
+    ssh_key_name:
+      type: string
+      required: true
+    vpc_subnet_id:
+      type: string
+      required: true
+    cred_file_path:
+      type: string
+      required: true
+    ssh_key_file:
+      type: string
+      required: true
+  node_templates:
+    ConsS3Bucket_0:
+      type: radon.nodes.datapipeline.source.ConsS3Bucket
+      metadata:
+        x: "304"
+        y: "92"
+        displayName: "ConsS3Bucket"
+      properties:
+        BucketName: "radon-jakovits"
+        cred_file_path: { get_input: cred_file_path }
+        schedulingStrategy: "EVENT_DRIVEN"
+        schedulingPeriodCRON: "* * * * * ?"
+        name: "readfroms3"
+        Region: "eu-central-1"
+      requirements:
+        - connectToPipeline:
+            node: PubsS3Bucket_0
+            relationship: con_ConnectNifiLocal_0
+            capability: ConnectToPipeline
+        - host:
+            node: Nifi_0
+            relationship: con_HostedOn_2
+            capability: host
+    AwsPlatform_0:
+      type: radon.nodes.aws.AwsPlatform
+      metadata:
+        x: "612"
+        y: "680"
+        displayName: "AwsPlatform"
+      properties:
+        name: "AWS"
+        region: "eu-central-1"
+    PubsS3Bucket_0:
+      type: radon.nodes.datapipeline.destination.PubsS3Bucket
+      metadata:
+        x: "1031"
+        y: "81"
+        displayName: "PubsS3Bucket"
+      properties:
+        BucketName: "radon-jakovits-output"
+        cred_file_path: { get_input: cred_file_path }
+        schedulingStrategy: "EVENT_DRIVEN"
+        schedulingPeriodCRON: "* * * * * ?"
+        name: "sendtos3"
+        Region: "eu-central-1"
+      requirements:
+        - host:
+            node: Nifi_0
+            relationship: con_HostedOn_1
+            capability: host
+    Nifi_0:
+      type: radon.nodes.nifi.Nifi
+      metadata:
+        x: "625"
+        y: "198"
+        displayName: "Nifi"
+      properties:
+        port: 8080
+        webinterface_public: true
+        component_version: "1.13.2"
+      requirements:
+        - host:
+            node: EC2_0
+            relationship: con_HostedOn_0
+            capability: host
+    EC2_0:
+      type: radon.nodes.VM.EC2
+      metadata:
+        x: "604"
+        y: "446"
+        displayName: "EC2"
+      properties:
+        image: "ami-0e0102e3ff768559b"
+        ssh_key_name: { get_input: ssh_key_name }
+        vpc_subnet_id: { get_input: vpc_subnet_id }
+        instance_type: "t3.medium"
+        ssh_key_file: { get_input: ssh_key_file }
+        ssh_user: "ubuntu"
+      requirements:
+        - host:
+            node: AwsPlatform_0
+            relationship: con_HostedOn_3
+            capability: host
+  relationship_templates:
+    con_HostedOn_2:
+      type: tosca.relationships.HostedOn
+    con_HostedOn_3:
+      type: tosca.relationships.HostedOn
+    con_HostedOn_0:
+      type: tosca.relationships.HostedOn
+    con_HostedOn_1:
+      type: tosca.relationships.HostedOn
+    con_ConnectNifiLocal_0:
+      type: radon.relationships.datapipeline.ConnectNifiLocal
+  policies:
+    - pipelineLoadTestPolicy:
+        type: radon.policies.testing.DataPipelineLoadTest
+        properties:
+          velocity_per_minute: "80"
+          hostname: "radon-jakovits.s3.eu-central-1.amazonaws.com"
+          test_duration: "80"
+          lower_bound: "0.1"
+          port: "8080"
+          performance_metric: "CPU_Load"
+          ti_blueprint: "radon.blueprints.testing.NiFiTIDocker"
+          upper_bound: "0.7"
+          resource_location: "radon-ctt/resources.zip"
+          test_id: "datatest67"
+        targets: [ ConsS3Bucket_0 ]
+  outputs:
+    public_address:
+      type: string
+      required: true
+      value: { get_attribute: [ EC2_0, public_address ] }

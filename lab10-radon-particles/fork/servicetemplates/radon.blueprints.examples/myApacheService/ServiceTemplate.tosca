@@ -1,0 +1,48 @@
+tosca_definitions_version: tosca_simple_yaml_1_3
+
+metadata:
+  targetNamespace: "radon.blueprints.examples"
+topology_template:
+  node_templates:
+    RemoteWorkstation_1:
+      type: radon.nodes.VM.RemoteWorkstation
+      metadata:
+        x: "392"
+        y: "219"
+        displayName: "myWorkerVM_tark"
+      properties:
+        ssh_username: "centos"
+        KeyFile: "/home/ubuntu/tark_priv.pem"
+        external_ip: "172.17.89.136"
+    containerNginx_0:
+      type: radon.nodes.docker.containerNginx
+      metadata:
+        x: "1231"
+        y: "543"
+        displayName: "defaultApacheServer_tark"
+      properties:
+        container_port: "80"
+        image_name: "httpd:2.4"
+        container_name: "tark_apache"
+        host_port: "8088"
+      requirements:
+        - host:
+            node: DockerEngineUT_0
+            relationship: con_HostedOn_1
+            capability: host
+    DockerEngineUT_0:
+      type: radon.nodes.docker.DockerEngineUT
+      metadata:
+        x: "641"
+        y: "427"
+        displayName: "DockerEngineUT"
+      requirements:
+        - host:
+            node: RemoteWorkstation_1
+            relationship: con_HostedOn_0
+            capability: host
+  relationship_templates:
+    con_HostedOn_0:
+      type: tosca.relationships.HostedOn
+    con_HostedOn_1:
+      type: tosca.relationships.HostedOn

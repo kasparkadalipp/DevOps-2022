@@ -1,0 +1,1 @@
+Here it is assumed that the VM is already created and can be accessed through SSH.

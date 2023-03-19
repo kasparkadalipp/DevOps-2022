@@ -1,0 +1,168 @@
+---
+swagger: "2.0"
+info:
+  description: "This is documentation for Python Flask micro-service endpoints"
+  version: "1.0.0"
+  title: "Swagger IoT data"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "xxx@ut.ee"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "172.17.91.131:30007"
+basePath: "/v2"
+schemes:
+- "http"
+paths:
+  /upload:
+    post:
+      tags:
+      - "Upload Sensor Data"
+      summary: "Uploads a file."
+      operationId: "upload_post"
+      consumes:
+      - "multipart/form-data"
+      parameters:
+      - name: "upfile"
+        in: "formData"
+        description: "The file to upload."
+        required: false
+        type: "file"
+      responses:
+        "200":
+          description: "File uploaded"
+        "400":
+          description: "File not uploaded."
+      x-swagger-router-controller: "swagger_server.controllers.upload_sensor_data_controller"
+  /modify:
+    put:
+      tags:
+      - "Modify Sensor Data"
+      summary: "Updated Sensor name"
+      operationId: "update_sensor_data"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "device object that needs to be modified"
+        required: true
+        schema:
+          $ref: "#/definitions/device"
+      responses:
+        "200":
+          description: "Data modified"
+        "400":
+          description: "Data not modified"
+      x-swagger-router-controller: "swagger_server.controllers.modify_sensor_data_controller"
+  /sensor_data/{host}:
+    get:
+      tags:
+      - "Query Sensor Data"
+      summary: "Find sensor data  by host"
+      description: "Returns a list of sensor data"
+      operationId: "get_sensor_by_id"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "host"
+        in: "path"
+        description: "Device id to search in the data"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/device"
+        "400":
+          description: "Invalid ID supplied"
+      x-swagger-router-controller: "swagger_server.controllers.query_sensor_data_controller"
+    delete:
+      tags:
+      - "Delete Sensor Data"
+      summary: "Delete sensor data"
+      operationId: "delete_sensor_data"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "host"
+        in: "path"
+        description: "Sensor Id that need to be updated"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        "200":
+          description: "Successful operation"
+        "400":
+          description: "Invalid device id supplied"
+      x-swagger-router-controller: "swagger_server.controllers.delete_sensor_data_controller"
+  /minimum/{sensor}:
+    get:
+      tags:
+      - "Query Sensor Data"
+      summary: "Find minimum sensor data  by host"
+      description: "Returns a list of sensor data"
+      operationId: "getminimum"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "sensor"
+        in: "path"
+        description: "Host to search in the data"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Successful with response containing minimum value"
+          schema:
+            $ref: "#/definitions/device"
+        "400":
+          description: "Invalid host supplied"
+      x-swagger-router-controller: "swagger_server.controllers.query_sensor_data_controller"
+  /maximum/{sensor}:
+    get:
+      tags:
+      - "Query Sensor Data"
+      summary: "Find maximum sensor data  by host"
+      description: "Returns a list of sensor data"
+      operationId: "getmaximum"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "sensor"
+        in: "path"
+        description: "host to search in the data"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Successful with response containing maximum       value"
+          schema:
+            $ref: "#/definitions/device"
+        "400":
+          description: "Invalid ID supplied"
+      x-swagger-router-controller: "swagger_server.controllers.query_sensor_data_controller"
+definitions:
+  device:
+    type: "object"
+    properties:
+      host:
+        type: "integer"
+        format: "int64"
+      unit:
+        type: "string"
+        example: "kg"
+    example:
+      host: "13318"
+      unit: "kg"

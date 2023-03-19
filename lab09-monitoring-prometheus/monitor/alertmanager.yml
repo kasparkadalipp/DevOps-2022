@@ -1,0 +1,13 @@
+route:
+  group_by: [instance, severity]
+  receiver: 'Zulip-notifications'
+  routes:
+    -  receiver: 'Zulip-notifications'
+       matchers:
+       - alertname="servicedown"
+ 
+ 
+receivers:
+- name: 'Zulip-notifications'
+  webhook_configs:
+  - url: "https://zulip.cs.ut.ee/api/v1/external/alertmanager?api_key=Qt6gOUAYqVybowpHjku2VqjVRx0u0GAT&stream=DevOps2022Fall&topic=DevOps-alerts-topics-lab09"

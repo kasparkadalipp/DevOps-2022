@@ -1,0 +1,3 @@
+# Practise Session 2 : Working with Docker Container Engine
+
+Docker is an open-source platform for developing, shipping, and running applications. Docker enables you to separate applications from infrastructure and deliver your applications quickly from sandbox to production environments. DevOps is primarily used to overcome 'Dev' and 'Ops' problems, and Docker seems to solve most of them by providing seamless control over all inevitable changes in development, production, and staging environments. So, the aim of an experiment is to get acquainted with docker fundamentals to advanced features such as to build and push the container images.

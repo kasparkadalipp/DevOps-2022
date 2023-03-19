@@ -1,0 +1,48 @@
+tosca_definitions_version: tosca_simple_yaml_1_3
+
+metadata:
+  targetNamespace: "example.org.tosca.servicetemplates"
+topology_template:
+  node_templates:
+    containerNginx_0:
+      type: radon.nodes.docker.containerNginx
+      metadata:
+        x: "281"
+        y: "315"
+        displayName: "defaultFlaskServer_kaliuzhn"
+      properties:
+        container_port: "5000"
+        image_name: "dkaliuzhnyi/devops2021:prac2"
+        container_name: "myflaskserver"
+        host_port: "8083"
+      requirements:
+        - host:
+            node: DockerEngineUT_0
+            relationship: con_HostedOn_1
+            capability: host
+    RemoteWorkstation_0:
+      type: radon.nodes.VM.RemoteWorkstation
+      metadata:
+        x: "1054"
+        y: "196"
+        displayName: "myWorkerVM_kaliuzhn"
+      properties:
+        ssh_username: "centos"
+        KeyFile: "/home/ubuntu/ssh_devops_kaliuzhnyi.pem"
+        external_ip: "172.17.91.200"
+    DockerEngineUT_0:
+      type: radon.nodes.docker.DockerEngineUT
+      metadata:
+        x: "711"
+        y: "275"
+        displayName: "DockerEngineUT"
+      requirements:
+        - host:
+            node: RemoteWorkstation_0
+            relationship: con_HostedOn_0
+            capability: host
+  relationship_templates:
+    con_HostedOn_0:
+      type: tosca.relationships.HostedOn
+    con_HostedOn_1:
+      type: tosca.relationships.HostedOn

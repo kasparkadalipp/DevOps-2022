@@ -1,0 +1,49 @@
+tosca_definitions_version: tosca_simple_yaml_1_3
+
+metadata:
+  targetNamespace: "example.org.tosca.servicetemplates"
+topology_template:
+  node_templates:
+    RemoteWorkstation_0:
+      type: radon.nodes.VM.RemoteWorkstation
+      metadata:
+        x: "486"
+        y: "369"
+        displayName: "mWorkerVM_vija"
+      properties:
+        ssh_username: "centos"
+        KeyFile: "/home/ubuntu/devops_vija"
+        external_ip: "192.168.42.180"
+    containerNginx_0:
+      type: radon.nodes.docker.containerNginx
+      metadata:
+        x: "1255"
+        y: "363"
+        displayName: "containerApache"
+      properties:
+        container_port: "80"
+        image_name: "httpd"
+        container_name: "myapacheserver"
+        host_port: "8080"
+        name: "defaultApacheServer_vija"
+      requirements:
+        - host:
+            node: DockerEngineUT_0
+            relationship: con_HostedOn_1
+            capability: host
+    DockerEngineUT_0:
+      type: radon.nodes.docker.DockerEngineUT
+      metadata:
+        x: "824"
+        y: "364"
+        displayName: "DockerEngineUT"
+      requirements:
+        - host:
+            node: RemoteWorkstation_0
+            relationship: con_HostedOn_0
+            capability: host
+  relationship_templates:
+    con_HostedOn_0:
+      type: tosca.relationships.HostedOn
+    con_HostedOn_1:
+      type: tosca.relationships.HostedOn

@@ -1,0 +1,17 @@
+stages:
+  - deploy
+
+deploy:
+  stage: deploy
+  image:
+     name: bitnami/kubectl:latest
+     entrypoint: [""]
+  script:
+    - kubectl config get-contexts
+    - kubectl config use-context devops2022-fall/students/devops2022Fall-Kadalipp-B75914/k8s-deployment:agent
+    - kubectl config current-context
+    - kubectl get pods
+    - kubectl delete -f ./flask-deployment.yaml || true
+    - kubectl delete -f ./pv.yaml || true
+    - kubectl apply -f ./pv.yaml
+    - kubectl apply -f ./flask-deployment.yaml

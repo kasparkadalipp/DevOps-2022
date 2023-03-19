@@ -1,0 +1,15 @@
+---
+- hosts: k8s-workers
+  gather_facts: true
+  become: true
+  become_method: sudo
+
+  tasks:
+    - name: Stop service httpd, if started
+      service:
+        name: httpd
+        state: stopped
+    - name: Remove apache package
+      yum:
+        name: httpd
+        state: absent

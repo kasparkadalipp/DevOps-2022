@@ -1,0 +1,15 @@
+FROM python:3
+
+WORKDIR /usr/src/app
+
+RUN pip install --no-cache-dir pytest pandas pytest-cov
+
+COPY ./ .
+
+RUN mkdir report
+
+RUN coverage run -m pytest || true
+
+RUN coverage report
+
+CMD ["coverage", "xml", "-o", "./report/coverage_report.xml", "--omit=/usr/lib/*"]

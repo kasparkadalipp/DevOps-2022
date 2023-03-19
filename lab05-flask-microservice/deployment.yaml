@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flaskapp-deployment
+  labels:
+    app: flaskapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: swagger-ui
+  template:
+    metadata:
+      labels:
+        app: swagger-ui
+    spec:
+      containers:
+      - name: swagger-ui
+        image: kadalipp/flask-microservice:latest
+        ports:
+        - containerPort: 8080
+          hostPort: 8081
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-flask-microservice
+spec:
+  type: NodePort
+  selector:
+    app: swagger-ui
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    nodePort: 30007
+    name: tcp-80

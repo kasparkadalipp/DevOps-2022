@@ -1,0 +1,41 @@
+tosca_definitions_version: tosca_simple_yaml_1_3
+
+node_types:
+  radon.nodes.VM.waldurOS:
+    metadata:
+      targetNamespace: "radon.nodes.VM"
+      abstract: "false"
+      final: "false"
+    attributes:
+      private_address:
+        type: string
+      public_ip:
+        type: string
+      public_address:
+        type: string
+      id:
+        type: string
+    properties:
+      flavor:
+        type: string
+      image:
+        type: string
+      floating_ip:
+        type: boolean
+        required: false
+        default: true
+      offering:
+        type: string
+        required: false
+      project:
+        type: string
+        required: false
+      networks:
+        type: string
+        description: e.g. devops-internal-pi-sub-net
+        required: false
+      system_volume_size:
+        type: string
+      vm_name:
+        type: string
+        description: name of the VM

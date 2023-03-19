@@ -1,0 +1,50 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+
+scrape_configs:
+- job_name: prometheus
+  honor_timestamps: true
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /metrics
+  scheme: http
+  follow_redirects: true
+  static_configs:
+  - targets:
+    - localhost:9090
+
+- job_name: 'controller-node-exporter'
+  static_configs:
+  - targets: ['172.17.91.48:9100']
+
+- job_name: 'controller-cAdvisor'
+  static_configs:
+  - targets: ['172.17.91.48:8081']
+
+- job_name: 'master-node-exporter'
+  static_configs:
+  - targets: ['172.17.91.131:9100']
+
+- job_name: 'master-cAdvisor'
+  static_configs:
+  - targets: ['172.17.91.131:8081']
+
+- job_name: 'worker1-node-exporter'
+  static_configs:
+  - targets: ['172.17.90.20:9100']
+
+- job_name: 'worker1-cAdvisor'
+  static_configs:
+  - targets: ['172.17.90.20:8081']
+
+rule_files:
+  - rules.yml
+ 
+alerting:
+  alertmanagers:
+  - follow_redirects: true
+    scheme: http
+    static_configs:
+    - targets: ['172.17.91.48:9093']

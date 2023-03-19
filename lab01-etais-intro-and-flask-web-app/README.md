@@ -1,0 +1,3 @@
+# Practical Session 1: Working with Cloud Infrastructure (ETAIS)
+
+The aim of the practical session is to learn the basics of cloud computing that serve as fundamental infrastructure to deploy your application services in a scalable manner. Here, you will learn how to provision virtual machines from the cloud infrastructure and access them publically by managing the security groups. In this experiment, we will use a cloud infrastructure service known as Estonian Scientific Computing Infrastructure (ETAIS) managed by the Estonian Scientific Community (https://etais.ee/about/). This cloud infrastructure is configured on large-scale hardware resources using the OpenStack cloud operating system.

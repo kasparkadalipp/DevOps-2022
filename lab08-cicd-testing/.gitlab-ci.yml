@@ -1,0 +1,62 @@
+variables:
+  PYTEST_IMAGE_NAME : $CI_REGISTRY_IMAGE:report
+  COVERAGE_IMAGE_NAME: $CI_REGISTRY_IMAGE:coverage
+
+stages:
+  - test
+
+include:
+  - template: Code-Quality.gitlab-ci.yml
+
+test_report_using_pytest:
+  stage: test
+  tags:
+  - pytest
+  script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+  - docker build -t $PYTEST_IMAGE_NAME -f ./docker/DockerfileUnitTest .
+  - docker run -v $PWD:/usr/src/app/report/ $PYTEST_IMAGE_NAME
+
+  artifacts:
+    when: always
+    expose_as: 'Test Report'
+    paths: [test_report.xml]
+    reports:
+      junit: test_report.xml
+
+# reference for python code coverage
+# https://docs.gitlab.com/ee/user/project/merge_requests/test_coverage_visualization.html#python-example
+test_coverage_report_using_coverage:
+  stage: test
+  tags:
+    - pytest
+  script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+  - docker build -t $COVERAGE_IMAGE_NAME -f ./docker/DockerfileTestCoverage .
+  - docker run -v $PWD:/usr/src/app/report/ $COVERAGE_IMAGE_NAME
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - .gitlab-ci.yml   
+  artifacts:
+    when: always
+    expose_as: 'Test Coverage Report from other branch'
+    paths: [coverage_report.xml]
+    reports:
+      junit: coverage_report.xml
+
+code_quality:
+    stage: test
+    services:   # Shut off Docker-in-Docker
+    tags:
+        - codeclimate-shared-devops  
+    rules:
+      - if: '$CI_PIPELINE_SOURCE == "push"'
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        changes:
+          - .gitlab-ci.yml        
+    artifacts:
+        when: always
+        expose_as: 'Code Quality Report from another branch'
+        paths: [gl-code-quality-report.json] 

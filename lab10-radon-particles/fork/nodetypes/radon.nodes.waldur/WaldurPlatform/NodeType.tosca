@@ -1,0 +1,18 @@
+tosca_definitions_version: tosca_simple_yaml_1_3
+
+node_types:
+  radon.nodes.waldur.WaldurPlatform:
+    metadata:
+      targetNamespace: "radon.nodes.waldur"
+      abstract: "false"
+      final: "false"
+    properties:
+      api:
+        type: string
+        description: Do not modify, you dont know what you are doing.
+        required: false
+        default: "https://api.etais.ee/api/"
+      token:
+        type: string
+        description: should be in the format "token 645hy" excluding double quote
+        required: false

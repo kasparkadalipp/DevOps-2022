@@ -1,0 +1,49 @@
+tosca_definitions_version: tosca_simple_yaml_1_3
+
+metadata:
+  targetNamespace: "radon.blueprints.examples"
+topology_template:
+  node_templates:
+    containerNginx_0:
+      type: radon.nodes.docker.containerNginx
+      metadata:
+        x: "1526"
+        y: "368"
+        displayName: "containerNginx"
+      properties:
+        container_port: "80"
+        image_name: "nginx:1.13"
+        container_name: "nginx"
+        host_port: "8082"
+        name: "defaultNginxServer_kadalipp"
+      requirements:
+        - host:
+            node: DockerEngineUT_0
+            relationship: con_HostedOn_1
+            capability: host
+    RemoteWorkstation_0:
+      type: radon.nodes.VM.RemoteWorkstation
+      metadata:
+        x: "614"
+        y: "307"
+        displayName: "RemoteWorkstation"
+      properties:
+        ssh_username: "centos"
+        KeyFile: "/home/centos/.ssh/kadalipp"
+        external_ip: "172.17.91.131"
+    DockerEngineUT_0:
+      type: radon.nodes.docker.DockerEngineUT
+      metadata:
+        x: "1049"
+        y: "295"
+        displayName: "DockerEngineUT"
+      requirements:
+        - host:
+            node: RemoteWorkstation_0
+            relationship: con_HostedOn_0
+            capability: host
+  relationship_templates:
+    con_HostedOn_0:
+      type: tosca.relationships.HostedOn
+    con_HostedOn_1:
+      type: tosca.relationships.HostedOn

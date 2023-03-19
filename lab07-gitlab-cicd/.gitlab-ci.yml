@@ -1,0 +1,37 @@
+variables:
+  IMAGE_HUB: gitlab.cs.ut.ee:5050/kadalipp/
+  IMAGE_NAME: gitlab.cs.ut.ee:5050/devops2022-fall/students/devops2022fall-kadalipp-b75914/lab07-gitlab-cicd/lab07:$CI_JOB_ID
+
+stages:
+  - build
+  - run
+
+build_image:
+  stage: build
+  script:
+    - docker login -u kadalipp -p $gitlabpassword gitlab.cs.ut.ee:5050
+    - cd webapp-flask
+    - docker build -t $IMAGE_NAME -f ./Dockerfile .
+    - docker push $IMAGE_NAME
+  tags:
+   - build
+
+run_image:
+  stage: run
+  image:
+     name: bitnami/kubectl:latest
+     entrypoint: [""]
+  script:
+   - kubectl config get-contexts
+   - kubectl config use-context devops2022-fall/students/devops2022Fall-Kadalipp-B75914/lab07-gitlab-cicd:k8s
+   - kubectl config current-context
+   - kubectl create secret docker-registry registry-credentials --docker-server=https://gitlab.cs.ut.ee:5050 --docker-username=kadalipp --docker-password=$gitlabpassword --docker-email=kaspar.kadalipp@ut.ee || true
+   - kubectl get pods
+   - kubectl delete -f ./flask-deployment.yaml || true
+   - kubectl delete -f ./pv.yaml || true
+   - kubectl apply -f ./pv.yaml
+   - kubectl apply -f ./flask-deployment.yaml
+   - kubectl get service -o wide
+   - kubectl get pod -o wide
+  tags:
+    - deploy
